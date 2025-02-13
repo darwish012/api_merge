@@ -1,0 +1,1 @@
+Project Overview: Developed an application that integrates multiple social media sources, specifically Reddit and Tumblr, allowing users to log in with their accounts and combine feeds from both platforms. Features include ordering posts by date/time and filtering by date, author, or account.
