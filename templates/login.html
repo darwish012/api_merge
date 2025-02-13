@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media Integrator Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(120deg, #FF4500, #35465C);
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background: #ffffff;
+            padding: 30px 40px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #4a4a4a;
+        }
+
+        .login-section {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .logo img {
+            width: 100px;
+            height: auto;
+            margin-right: 20px;
+        }
+
+        .input-field {
+            flex: 1;
+        }
+
+        .input-field label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .input-field input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .input-field input:focus {
+            border-color: #84fab0;
+            outline: none;
+            box-shadow: 0 0 5px rgba(132, 250, 176, 0.6);
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: #FF4500;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background: #35465C;
+        }
+
+        .error-message {
+            color: red;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Login</h1>
+        {% if error %}
+            <p class="error-message">{{ error }}</p>
+        {% endif %}
+
+        <form method="POST" action="/login">
+            <div class="login-section">
+                <div class="logo">
+                    <img src="/static/reddit.png" alt="Reddit Logo">
+                </div>
+                <div class="input-field">
+                    <label for="reddit_username">Reddit Username:</label>
+                    <input type="text" id="reddit_username" name="reddit_username">
+                    <label for="reddit_password">Reddit Password:</label>
+                    <input type="password" id="reddit_password" name="reddit_password">
+                </div>
+            </div>
+
+            <div class="login-section">
+                <div class="logo">
+                    <img src="/static/tumblr.png" alt="Tumblr Logo">
+                </div>
+                <div class="input-field">
+                    <label for="tumblr_username">Tumblr Username:</label>
+                    <input type="text" id="tumblr_username" name="tumblr_username">
+                    <label for="tumblr_password">Tumblr Password:</label>
+                    <input type="password" id="tumblr_password" name="tumblr_password">
+                </div>
+            </div>
+
+            <button type="submit">Login</button>
+        </form>
+    </div>
+</body>
+</html>

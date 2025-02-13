@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merged Feed with Media</title>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+    <style>
+        /* General Body Styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #36465d;
+            color: white;
+        }
+
+        h1 {
+            text-align: center;
+            padding: 20px;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            background-color: rgba(0, 0, 0, 0.2);
+            color: #fff;
+            text-shadow: 1px 1px 5px black;
+        }
+
+        /* Filter Form Styling */
+        form {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px auto;
+            gap: 20px;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            width: 90%;
+        }
+
+        form label, form input, form button, form select {
+            color: white;
+            font-size: 1rem;
+        }
+
+        /*form input {
+            padding: 8px 10px;
+            border-radius: 5px;
+            border: none;
+        }*/
+        form input, form select { 
+            padding: 8px 10px; 
+            border-radius: 5px; 
+            border: none; 
+            background: rgba(255, 255, 255, 0.8); 
+            color: #333; }
+
+        form input[type="date"], form input[type="text"] {
+            background: rgba(255, 255, 255, 0.8);
+            color: #333;
+        }
+
+        form button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #ff5722;
+            color: white;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        form button:hover {
+            background-color: #35465C;
+        }
+
+        button.clear-btn {
+            background-color: #ff5722;
+            width: 200px;
+        }
+
+        /* Refresh Button Styling */
+        .refresh-btn {
+            display: block;
+            margin: 0 auto 20px auto;
+            padding: 10px 20px;
+            background-color: #ff5722;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            background-color: #576f86;
+        }
+
+        /* Posts Styling */
+        .post {
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            margin: 20px auto;
+            padding: 20px;
+            width: 80%;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .post:hover {
+            transform: translateY(-5px);
+            box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .post p {
+            margin: 10px 0;
+        }
+
+        /* Centering Media Elements */
+        .post img, .post video {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            border-radius: 10px;
+        }
+
+        /* Slideshow Styles */
+        .slideshow-container {
+            position: relative;
+            max-width: 100%;
+        }
+
+        .mySlides {
+            display: none; /* Hide all slides initially */
+        }
+
+        .mySlides:first-child {
+            display: block; /* Show the first slide */
+        }
+
+        .prev, .next {
+            cursor: pointer;
+            position: absolute;
+            top: 50%;
+            padding: 16px;
+            margin-top: -22px;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+            border-radius: 50%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .prev { left: 0; }
+        .next { right: 0; }
+
+        .caption-container {
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px;
+        }
+
+        .numbertext {
+            color: white;
+            position: absolute;
+            top: 0;
+            left: 10px;
+            font-size: 12px;
+            padding: 8px 12px;
+        }
+
+        /* Thumbnail Images */
+        .row {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .column {
+            flex: 1;
+            max-width: 16%;
+        }
+
+        .demo {
+            opacity: 0.6;
+            cursor: pointer;
+        }
+
+        .active, .demo:hover {
+            opacity: 1;
+        }
+            #loadMoreBtn {
+        padding: 10px 20px;
+        font-size: 16px;
+        background-color: #ff5722;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    
+    #loadMoreBtn:hover {
+        background-color: #0056b3;
+    }
+    
+    /* Center the spinner */
+    #loadingSpinner {
+        text-align: center;
+        font-size: 18px;
+        color: #007bff;
+        margin-top: 20px;
+    }
+
+
+    </style>
+</head>
+<body>
+    <script>
+        function loadVideo(videoId, url) {
+            console.log("videoId: ", videoId);
+            console.log("url: ", url);
+            var video = document.getElementById(videoId);
+            if (Hls.isSupported()) {
+                var hls = new Hls();
+                hls.loadSource(url);
+                hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, function () {
+                    video.play();
+                });
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                // Safari supports HLS natively
+                video.src = url;
+                video.addEventListener('loadedmetadata', function () {
+                    video.play();
+                });
+            }
+            
+        };
+    </script>
+    <h1>ReddiTumblr Feed</h1>
+    
+    <!-- Filtering Form -->
+    <form method="GET" action="/merged_feed">
+        <label for="tumblr_filter">Filter by Tumblr Account:</label>
+        <input type="text" id="tumblr_filter" name="tumblr_filter" value="{{ tumblr_author_filter }}" placeholder="Enter Tumblr account name">
+
+        <label for="reddit_filter">Filter by Reddit Account:</label>
+        <input type="text" id="reddit_filter" name="reddit_filter" value="{{ reddit_author_filter }}" placeholder="Enter Reddit account name">
+    
+        <!-- Buttons -->
+        <button type="submit">Filter</button>
+        <button type="button" class="clear-btn" onclick="location.href='/merged_feed'">Clear Filters</button>
+    </form>
+    <form method="GET" action="{{ url_for('filter_by_date') }}">
+        <!-- Date Filter -->
+        <label for="date">Filter by Date:</label>
+        <input type="date" id="date" name="date" value="{{ date_filter }}">
+        <label for="date">Sort Posts:</label>
+        <select id="sort_order" name="sort_order"> 
+            <option value="most_recent" {% if sort_order == 'most_recent' %}selected{% endif %}>Most Recent</option> 
+            <option value="least_recent" {% if sort_order == 'least_recent' %}selected{% endif %}>Least Recent</option> 
+        </select>
+        <button type="submit">Apply Filter</button>
+       
+
+        
+    </form>
+ 
+
+
+    <!-- Refresh Button -->
+    <button class="refresh-btn" onclick="location.reload()">Refresh</button>
+
+    {% for post in posts %}
+    <div class="post" id="post-{{ loop.index }}">
+        <p><strong>Source:</strong> {{ post.source }}</p>
+        <p><strong>Account Name:</strong> {{ post.blog_name }}</p>
+
+        {% if post.media %}
+            {% if post.media|length > 1 %}
+                <div class="slideshow-container" id="slideshow-{{ loop.index }}">
+                    {% for media_url in post.media %}
+                        <div class="mySlides">
+                            <div class="numbertext">{{ loop.index }} / {{ post.media|length }}</div>
+                            {% if post.type == 'photo' %}
+                                <img src="{{ media_url }}" alt="Media">
+                            {% elif post.type == 'video' %}
+                                <video controls>
+                                    <source src="{{ media_url }}" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    <a class="prev" onclick="plusSlides(-1, {{ loop.index }})">&#10094;</a>
+                    <a class="next" onclick="plusSlides(1, {{ loop.index }})">&#10095;</a>
+                </div>
+            {% else %}
+                {% if post.type == 'photo' %}
+                    <img src="{{ post.media[0] }}" alt="Media">
+                {% elif post.type == 'video' %}
+                    {% if post.video_type == "hls" %}
+                        <video id="video_{{ post.id }}" controls width="640" height="360"></video>
+                        <button onclick="loadVideo('video_{{ post.id }}', '{{ post.media[0] }}')">Play Video</button>
+                    {% elif post.video_type == "mp4" %}
+                    
+                        <video controls style="max-width: 100%; height: auto;">
+                            <source src="{{ post.media[0] }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    {% endif %}
+                {% endif %}
+            {% endif %}
+        {% endif %}
+
+        <p><strong></strong> {{ post.content | safe }}</p>
+        <p><strong>Timestamp:</strong> {{ post.timestamp}}</p>
+        
+    </div>
+{% endfor %}
+    
+    <div class="text-center">
+    <form action="{{ url_for('load_more') }}" method="post">
+        <button type="submit" class="btn btn-primary" id="loadMoreBtn">Load More</button>
+    </form>
+    </div>
+
+    <!-- Slideshow Script -->
+    <script>
+        let slideIndices = {};  // Object to hold slide indices for each post
+
+        function showSlides(postIndex) {
+            let slides = document.querySelectorAll(`#slideshow-${postIndex} .mySlides`);  // Corrected
+            let prevBtn = document.querySelector(`#slideshow-${postIndex} .prev`);  // Corrected
+            let nextBtn = document.querySelector(`#slideshow-${postIndex} .next`);  // Corrected
+            let slideIndex = slideIndices[postIndex] || 1;  // Default to 1 if not set
+        
+            // Ensure the index is within bounds
+            if (slideIndex > slides.length) { slideIndex = slides.length; }
+            if (slideIndex < 1) { slideIndex = 1; }
+        
+            // Hide all slides
+            slides.forEach(slide => slide.style.display = "none");
+        
+            // Show the correct slide
+            slides[slideIndex - 1].style.display = "block";
+        
+            // Disable/Enable the arrow buttons based on position
+            if (slideIndex === 1) {
+                prevBtn.style.display = "none";  // Hide left arrow on the first slide
+            } else {
+                prevBtn.style.display = "block";  // Show left arrow
+            }
+        
+            if (slideIndex === slides.length) {
+                nextBtn.style.display = "none";  // Hide right arrow on the last slide
+            } else {
+                nextBtn.style.display = "block";  // Show right arrow
+            }
+        
+            // Save the current slide index
+            slideIndices[postIndex] = slideIndex;
+        }
+        
+        function plusSlides(n, postIndex) {
+            let currentSlideIndex = slideIndices[postIndex] || 1;
+            let totalSlides = document.querySelectorAll(`#slideshow-${postIndex} .mySlides`).length;  // Corrected
+        
+            // Prevent going forward if it's the last slide
+            if (n === 1 && currentSlideIndex === totalSlides) return;
+            // Prevent going backward if it's the first slide
+            if (n === -1 && currentSlideIndex === 1) return;
+        
+            // Update the slide index
+            slideIndices[postIndex] = currentSlideIndex + n;
+        
+            // Show the new slide
+            showSlides(postIndex);
+        }
+
+
+        // Initialize slides for each post when the page loads
+        document.addEventListener("DOMContentLoaded", function() {
+            {% for post in posts %}
+                slideIndices[{{ loop.index }}] = 1;  // Initialize slide index for this post
+                showSlides({{ loop.index }});  // Show the first slide for this post
+                
+            {% endfor %}
+            
+            
+        });
+    </script>
+    
+
+</body>
+</html>
